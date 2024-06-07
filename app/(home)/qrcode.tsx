@@ -7,7 +7,7 @@ import React from "react";
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
-export default function HomeScreen() {
+export default function QrCodeScreen() {
   return (
     <ParallaxScrollView
       containerBackground={
@@ -41,7 +41,7 @@ export default function HomeScreen() {
           Công ty cổ phần thực phẩm cholimex
         </ThemedText>
         <ThemedView
-          style={[styles.contaiContent, styles.rowContai, styles.padTop]}
+          style={[styles.contaiContent, styles.rowContai, styles.padTopLeft]}
         >
           <Image
             source={require("@/assets/images/iconlocation.png")}
@@ -52,7 +52,7 @@ export default function HomeScreen() {
           </ThemedText>
         </ThemedView>
         <ThemedView
-          style={[styles.contaiContent, styles.rowContai, styles.padTop]}
+          style={[styles.contaiContent, styles.rowContai, styles.padTopLeft]}
         >
           <Image
             source={require("@/assets/images/iconmail.png")}
@@ -63,7 +63,7 @@ export default function HomeScreen() {
           </ThemedText>
         </ThemedView>
         <ThemedView
-          style={[styles.contaiContent, styles.rowContai, styles.padTop]}
+          style={[styles.contaiContent, styles.rowContai, styles.padTopLeft]}
         >
           <Image
             source={require("@/assets/images/iconwebsite.png")}
@@ -113,7 +113,8 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     backgroundColor: "transparent",
   },
-  padTop: {
+  padTopLeft: {
     paddingTop: 5,
+    paddingLeft: 10,
   },
 });
