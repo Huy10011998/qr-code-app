@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import {
   Image,
   StyleSheet,
@@ -5,19 +6,63 @@ import {
   TextInput,
   TouchableOpacity,
   Text,
+  Alert,
 } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { useNavigation } from "expo-router";
+import axios from "axios";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
 export default function LoginScreen() {
-  const navigation = useNavigation("/(home)");
+  const navigation = useNavigation();
+  const [userId, setUserId] = useState("");
+  const [password, setPassword] = useState("");
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isLoginDisabled, setIsLoginDisabled] = useState(true);
 
-  const handlePress = () => {
-    (navigation as any).navigate("(tabs)");
+  useEffect(() => {
+    if (password.trim() !== "") {
+      setIsLoginDisabled(false);
+    } else {
+      setIsLoginDisabled(true);
+    }
+  }, [password]);
+
+  const handlePressIconEyeView = () => {
+    setIsPasswordVisible(!isPasswordVisible);
+  };
+
+  const handlePressLogin = async () => {
+    if (isLoginDisabled) {
+      return;
+    }
+    try {
+      const response = await axios.post(
+        "https://hrcert.cholimexfood.com.vn/api/auth/login",
+        {
+          userId,
+          password,
+        }
+      );
+
+      if (response.status === 200) {
+        const id = response.data.data.id;
+        (navigation as any).navigate("(tabs)", { id });
+      } else {
+        Alert.alert(
+          "Đăng nhập thất bại",
+          "Tài khoản hoặc mật khẩu không chính xác"
+        );
+      }
+    } catch (error) {
+      Alert.alert(
+        "Đăng nhập thất bại",
+        "Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại sau."
+      );
+    }
   };
 
   return (
@@ -29,27 +74,47 @@ export default function LoginScreen() {
         />
       }
     >
-      <ThemedView style={[styles.contaiContent, { flex: 0.3 }]}>
+      <ThemedView style={[styles.contaiContent, { flex: 0.5 }]}>
         <Image
           source={require("@/assets/images/logo-cholimex.jpg")}
           style={styles.logoCholimex}
         />
       </ThemedView>
-      <ThemedView style={[styles.contaiContent, { flex: 0.7 }]}>
+      <ThemedView style={[styles.contaiInput, { flex: 0.5 }]}>
         <TextInput
           style={styles.inputContai}
-          // onChangeText={(text) => console.log(text)}
           placeholder={"Tài khoản"}
           placeholderTextColor="#fff"
+          value={userId}
+          onChangeText={setUserId}
         />
-        <TextInput
-          style={[styles.inputContai, { marginTop: 20 }]}
-          secureTextEntry={true}
-          // onChangeText={(text) => console.log(text)}
-          placeholder={"Mật khẩu"}
-          placeholderTextColor="#fff"
-        />
-        <TouchableOpacity style={styles.btnContai} onPress={handlePress}>
+        <ThemedView style={styles.contaiInputPW}>
+          <TextInput
+            style={styles.inputContaiPW}
+            secureTextEntry={!isPasswordVisible}
+            placeholder={"Mật khẩu"}
+            placeholderTextColor="#fff"
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TouchableOpacity
+            style={styles.iconEyeContainer}
+            onPress={handlePressIconEyeView}
+          >
+            <Image
+              source={
+                isPasswordVisible
+                  ? require("@/assets/images/iconEye-hide.png")
+                  : require("@/assets/images/iconEye-view.png")
+              }
+              style={styles.iconEye}
+            />
+          </TouchableOpacity>
+        </ThemedView>
+        <TouchableOpacity
+          style={[[styles.btnContai, isLoginDisabled && styles.disabledBtn]]}
+          onPress={handlePressLogin}
+        >
           <Text style={styles.textContai}>Đăng nhập</Text>
         </TouchableOpacity>
       </ThemedView>
@@ -64,15 +129,19 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
   },
   contaiContent: {
-    marginTop: 32,
-    alignSelf: "flex-start",
+    justifyContent: "flex-end",
+    alignItems: "center",
     borderRadius: 8,
     backgroundColor: "transparent",
     width: "100%",
   },
+  contaiInput: {
+    alignSelf: "flex-start",
+    backgroundColor: "transparent",
+    width: "100%",
+    paddingTop: 10,
+  },
   logoCholimex: {
-    width: 128,
-    height: 112,
     resizeMode: "contain",
   },
   inputContai: {
@@ -82,6 +151,29 @@ const styles = StyleSheet.create({
     borderColor: "#fff",
     color: "#fff",
     fontWeight: "500",
+  },
+  contaiInputPW: {
+    position: "relative",
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "transparent",
+  },
+  inputContaiPW: {
+    fontSize: 18,
+    height: 60,
+    borderBottomWidth: 1.0,
+    borderColor: "#fff",
+    color: "#fff",
+    fontWeight: "500",
+    width: "100%",
+  },
+  iconEyeContainer: {
+    position: "absolute",
+    right: 10,
+  },
+  iconEye: {
+    width: 25,
+    height: 25,
   },
   btnContai: {
     borderRadius: 8,
@@ -96,5 +188,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "500",
     color: "#FF3333",
+  },
+  disabledBtn: {
+    opacity: 0.6, // Độ mờ
+    backgroundColor: "#cccccc", // Màu nền
+    // Bất kỳ kiểu CSS khác bạn muốn áp dụng khi nút bị vô hiệu hóa
   },
 });

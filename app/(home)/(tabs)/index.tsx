@@ -1,13 +1,40 @@
-import { Image, StyleSheet, Dimensions } from "react-native";
+import React, { useState, useEffect } from "react";
+import {
+  Image,
+  StyleSheet,
+  Dimensions,
+  ActivityIndicator,
+  View,
+} from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
-import React from "react";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
 export default function QrCodeScreen() {
+  const [isBgLoaded, setIsBgLoaded] = useState(false);
+
+  useEffect(() => {
+    const image = Image.resolveAssetSource(
+      require("@/assets/images/bg-qrcode.png")
+    );
+    Image.getSize(
+      image.uri,
+      () => setIsBgLoaded(true),
+      () => setIsBgLoaded(false)
+    );
+  }, []);
+
+  if (!isBgLoaded) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#FF3333" />
+      </View>
+    );
+  }
+
   return (
     <ParallaxScrollView
       containerBackground={
@@ -79,6 +106,11 @@ export default function QrCodeScreen() {
 }
 
 const styles = StyleSheet.create({
+  loaderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   bgQrCode: {
     width: windowWidth,
     height: windowHeight,
