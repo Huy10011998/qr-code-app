@@ -12,6 +12,7 @@ import { ThemedView } from "@/components/ThemedView";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { useNavigation } from "expo-router";
 import axios from "axios";
+import { useAuth } from "@/components/AuthProvider";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -35,6 +36,8 @@ export default function LoginScreen() {
     setIsPasswordVisible(!isPasswordVisible);
   };
 
+  const { setInfoUser, setToken } = useAuth();
+
   const handlePressLogin = async () => {
     if (isLoginDisabled) {
       return;
@@ -49,19 +52,37 @@ export default function LoginScreen() {
       );
 
       if (response.status === 200) {
-        const id = response.data.data.id;
-        (navigation as any).navigate("(tabs)", { id });
+        const userData = {
+          id: response.data.data.id,
+          userId: response.data.data.userId,
+          fullName: response.data.data.fullName,
+          department: response.data.data.department,
+          email: response.data.data.email,
+          phoneNumber: response.data.data.phoneNumber,
+        };
+        setInfoUser(userData);
+        setToken(response.data.token); // Đặt token bằng cách sử dụng hàm setter từ context
+        (navigation as any).navigate("(tabs)");
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401 || error.response?.status === 404) {
+          Alert.alert(
+            "Đăng nhập thất bại",
+            "Tài khoản hoặc mật khẩu không chính xác"
+          );
+        } else {
+          Alert.alert(
+            "Đăng nhập thất bại",
+            "Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại sau."
+          );
+        }
       } else {
         Alert.alert(
           "Đăng nhập thất bại",
-          "Tài khoản hoặc mật khẩu không chính xác"
+          "Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại sau."
         );
       }
-    } catch (error) {
-      Alert.alert(
-        "Đăng nhập thất bại",
-        "Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại sau."
-      );
     }
   };
 
@@ -112,7 +133,7 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </ThemedView>
         <TouchableOpacity
-          style={[[styles.btnContai, isLoginDisabled && styles.disabledBtn]]}
+          style={[styles.btnContai, isLoginDisabled && styles.disabledBtn]}
           onPress={handlePressLogin}
         >
           <Text style={styles.textContai}>Đăng nhập</Text>
