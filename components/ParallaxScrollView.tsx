@@ -2,7 +2,8 @@ import type { PropsWithChildren, ReactElement } from "react";
 import { StyleSheet, Dimensions } from "react-native";
 import Animated, { useAnimatedRef } from "react-native-reanimated";
 
-import { ThemedView } from "@/components/ThemedView";
+import React from "react";
+import { ThemedView } from "./ThemedView";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;

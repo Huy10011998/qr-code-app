@@ -7,12 +7,14 @@ import {
   TouchableOpacity,
   Text,
   Alert,
+  ActivityIndicator,
 } from "react-native";
-import { ThemedView } from "@/components/ThemedView";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { useNavigation } from "expo-router";
 import axios from "axios";
-import { useAuth } from "@/components/AuthProvider";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { useAuth } from "../components/AuthProvider";
+import ParallaxScrollView from "../components/ParallaxScrollView";
+import { ThemedView } from "../components/ThemedView";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -22,26 +24,28 @@ export default function LoginScreen() {
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [isLoginDisabled, setIsLoginDisabled] = useState(true);
+  const [isLoginDisabled, setIsLoginDisabled] = useState(true); // Add this line
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (password.trim() !== "") {
+    if (userId.trim() !== "" && password.trim() !== "") {
       setIsLoginDisabled(false);
     } else {
       setIsLoginDisabled(true);
     }
-  }, [password]);
+  }, [userId, password]);
 
   const handlePressIconEyeView = () => {
     setIsPasswordVisible(!isPasswordVisible);
   };
 
-  const { setInfoUser, setToken } = useAuth();
+  const { setUserData, setToken } = useAuth();
 
   const handlePressLogin = async () => {
-    if (isLoginDisabled) {
+    if (isLoading) {
       return;
     }
+    setIsLoading(true);
     try {
       const response = await axios.post(
         "https://hrcert.cholimexfood.com.vn/api/auth/login",
@@ -60,8 +64,8 @@ export default function LoginScreen() {
           email: response.data.data.email,
           phoneNumber: response.data.data.phoneNumber,
         };
-        setInfoUser(userData);
-        setToken(response.data.token); // Đặt token bằng cách sử dụng hàm setter từ context
+        setUserData(userData);
+        setToken(response.data.token);
         (navigation as any).navigate("(tabs)");
       }
     } catch (error) {
@@ -71,75 +75,93 @@ export default function LoginScreen() {
             "Đăng nhập thất bại",
             "Tài khoản hoặc mật khẩu không chính xác"
           );
+          setPassword("");
         } else {
           Alert.alert(
             "Đăng nhập thất bại",
             "Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại sau."
           );
+          setPassword("");
         }
       } else {
         Alert.alert(
           "Đăng nhập thất bại",
           "Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại sau."
         );
+        setPassword("");
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <ParallaxScrollView
-      containerBackground={
-        <Image
-          source={require("@/assets/images/bg-login.jpg")}
-          style={styles.bgLogin}
-        />
-      }
+    <KeyboardAwareScrollView
+      contentContainerStyle={{ flexGrow: 1 }}
+      enableOnAndroid={true}
+      extraScrollHeight={50}
+      enableAutomaticScroll={true}
+      enableResetScrollToCoords={true}
     >
-      <ThemedView style={[styles.contaiContent, { flex: 0.5 }]}>
-        <Image
-          source={require("@/assets/images/logo-cholimex.jpg")}
-          style={styles.logoCholimex}
-        />
-      </ThemedView>
-      <ThemedView style={[styles.contaiInput, { flex: 0.5 }]}>
-        <TextInput
-          style={styles.inputContai}
-          placeholder={"Tài khoản"}
-          placeholderTextColor="#fff"
-          value={userId}
-          onChangeText={setUserId}
-        />
-        <ThemedView style={styles.contaiInputPW}>
-          <TextInput
-            style={styles.inputContaiPW}
-            secureTextEntry={!isPasswordVisible}
-            placeholder={"Mật khẩu"}
-            placeholderTextColor="#fff"
-            value={password}
-            onChangeText={setPassword}
+      <ParallaxScrollView
+        containerBackground={
+          <Image
+            source={require("../assets/images/bg-qrcode.png")}
+            style={styles.bgLogin}
           />
-          <TouchableOpacity
-            style={styles.iconEyeContainer}
-            onPress={handlePressIconEyeView}
-          >
-            <Image
-              source={
-                isPasswordVisible
-                  ? require("@/assets/images/iconEye-hide.png")
-                  : require("@/assets/images/iconEye-view.png")
-              }
-              style={styles.iconEye}
+        }
+      >
+        <ThemedView style={[styles.contaiContent, { flex: 0.5 }]}>
+          <Image
+            source={require("../assets/images/logo-cholimex.jpg")}
+            style={styles.logoCholimex}
+          />
+        </ThemedView>
+        <ThemedView style={[styles.contaiInput, { flex: 0.5 }]}>
+          <TextInput
+            style={styles.inputContai}
+            placeholder={"Tài khoản"}
+            placeholderTextColor="#fff"
+            value={userId}
+            onChangeText={setUserId}
+          />
+          <ThemedView style={styles.contaiInputPW}>
+            <TextInput
+              style={styles.inputContaiPW}
+              secureTextEntry={!isPasswordVisible}
+              placeholder={"Mật khẩu"}
+              placeholderTextColor="#fff"
+              value={password}
+              onChangeText={setPassword}
             />
+            <TouchableOpacity
+              style={styles.iconEyeContainer}
+              onPress={handlePressIconEyeView}
+            >
+              <Image
+                source={
+                  isPasswordVisible
+                    ? require("../assets/images/iconEye-hide.png")
+                    : require("../assets/images/iconEye-view.png")
+                }
+                style={styles.iconEye}
+              />
+            </TouchableOpacity>
+          </ThemedView>
+          <TouchableOpacity
+            style={[styles.btnContai, isLoginDisabled && styles.disabledBtn]}
+            onPress={handlePressLogin}
+            disabled={isLoginDisabled || isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#FF3333" />
+            ) : (
+              <Text style={styles.textContai}>Đăng nhập</Text>
+            )}
           </TouchableOpacity>
         </ThemedView>
-        <TouchableOpacity
-          style={[styles.btnContai, isLoginDisabled && styles.disabledBtn]}
-          onPress={handlePressLogin}
-        >
-          <Text style={styles.textContai}>Đăng nhập</Text>
-        </TouchableOpacity>
-      </ThemedView>
-    </ParallaxScrollView>
+      </ParallaxScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 
@@ -148,6 +170,7 @@ const styles = StyleSheet.create({
     width: windowWidth,
     height: windowHeight,
     resizeMode: "cover",
+    position: "absolute",
   },
   contaiContent: {
     justifyContent: "flex-end",
@@ -203,6 +226,7 @@ const styles = StyleSheet.create({
     height: 60,
     padding: 20,
     backgroundColor: "#fff",
+    justifyContent: "center",
   },
   textContai: {
     textAlign: "center",
@@ -211,8 +235,7 @@ const styles = StyleSheet.create({
     color: "#FF3333",
   },
   disabledBtn: {
-    opacity: 0.6, // Độ mờ
-    backgroundColor: "#cccccc", // Màu nền
-    // Bất kỳ kiểu CSS khác bạn muốn áp dụng khi nút bị vô hiệu hóa
+    opacity: 0.6,
+    backgroundColor: "#cccccc",
   },
 });

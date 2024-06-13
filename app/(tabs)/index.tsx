@@ -1,22 +1,30 @@
 import React, { useState, useEffect } from "react";
-import { Image, StyleSheet, Dimensions, Alert } from "react-native";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { useAuth } from "@/components/AuthProvider";
-import QRCodeGenerator from "@/components/QRCodeGenerator";
+import {
+  Image,
+  StyleSheet,
+  Dimensions,
+  Alert,
+  ActivityIndicator,
+  View,
+} from "react-native";
 import axios from "axios";
 import { TouchableOpacity, Linking } from "react-native";
+import { useAuth } from "../../components/AuthProvider";
+import { ThemedText } from "../../components/ThemedText";
+import ParallaxScrollView from "../../components/ParallaxScrollView";
+import { ThemedView } from "../../components/ThemedView";
+import QRCodeGenerator from "../../components/QRCodeGenerator";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
-export default function QrCodeScreen() {
+export default function TabOneScreen() {
   const [id, setId] = useState("");
   const [fullName, setfullName] = useState("");
   const [department, setDepartment] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const { userData } = useAuth();
   const userId = userData.userId;
@@ -42,9 +50,12 @@ export default function QrCodeScreen() {
     return parts.join(" ");
   }
 
+  const sleep = (ms: any) => new Promise((resolve) => setTimeout(resolve, ms));
+
   useEffect(() => {
     const fetchQrCode = async () => {
       try {
+        setLoading(true);
         const response = await axios.post(
           "https://hrcert.cholimexfood.com.vn/api/auth/getQrCode",
           {
@@ -56,6 +67,8 @@ export default function QrCodeScreen() {
             },
           }
         );
+
+        await sleep(500);
 
         if (response.status === 200) {
           setId(response.data.data.id);
@@ -82,6 +95,8 @@ export default function QrCodeScreen() {
             "Đã xảy ra lỗi khi lấy thông tin. Vui lòng thử lại sau!!!"
           );
         }
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -106,63 +121,83 @@ export default function QrCodeScreen() {
     <ParallaxScrollView
       containerBackground={
         <Image
-          source={require("@/assets/images/bg-qrcode.png")}
+          source={require("../../assets/images/bg-qrcode.png")}
           style={styles.bgQrCode}
         />
       }
     >
-      <ThemedView style={styles.contaiQrcode}>
-        <QRCodeGenerator
-          url={`https://hrcert.cholimexfood.com.vn/profile/${id}`}
-        />
-      </ThemedView>
-      <ThemedView style={styles.contaiContent}>
-        <ThemedText type="subtitle">{fullName}</ThemedText>
-        <ThemedText type="titleDepartment">{department}</ThemedText>
-        <ThemedView style={[styles.contaiContent, styles.rowContai]}>
-          <Image
-            source={require("@/assets/images/iconphone.png")}
-            style={styles.iconPhone}
-          />
-          <ThemedText type="titlePhone">
-            {formatPhoneNumber(phoneNumber)}
-          </ThemedText>
-        </ThemedView>
-      </ThemedView>
-      <ThemedView style={[styles.flexStart]}>
-        <ThemedText type="subtitleFooter">
-          Công ty cổ phần thực phẩm cholimex
-        </ThemedText>
-        <ThemedView
-          style={[styles.contaiContent, styles.rowContai, styles.padTopLeft]}
-        >
-          <Image
-            source={require("@/assets/images/iconlocation.png")}
-            style={[styles.iconFooter, styles.flexStart]}
-          />
-          <ThemedText type="titleFooter">
-            Đường số 7, KCN Vĩnh Lộc, Huyện Bình Chánh, TP.HCM, Việt Nam
-          </ThemedText>
-        </ThemedView>
-        <ThemedView
-          style={[styles.contaiContent, styles.rowContai, styles.padTopLeft]}
-        >
-          <Image
-            source={require("@/assets/images/iconmail.png")}
-            style={styles.iconFooter}
-          />
-          <ThemedText type="titleFooter">Email: {email}</ThemedText>
-        </ThemedView>
-        <ThemedView
-          style={[styles.contaiContent, styles.rowContai, styles.padTopLeft]}
-        >
-          <Image
-            source={require("@/assets/images/iconwebsite.png")}
-            style={styles.iconFooter}
-          />
-          <WebsiteLink></WebsiteLink>
-        </ThemedView>
-      </ThemedView>
+      {loading ? (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color="#FF3333" />
+        </View>
+      ) : (
+        <>
+          <ThemedView style={styles.contaiQrcode}>
+            <QRCodeGenerator
+              url={`https://hrcert.cholimexfood.com.vn/profile/${id}`}
+            />
+          </ThemedView>
+          <ThemedView style={styles.contaiContent}>
+            <ThemedText type="subtitle">{fullName}</ThemedText>
+            <ThemedText type="titleDepartment">{department}</ThemedText>
+            <ThemedView style={[styles.contaiContent, styles.rowContai]}>
+              <Image
+                source={require("../../assets/images/iconphone.png")}
+                style={styles.iconPhone}
+              />
+              <ThemedText type="titlePhone">
+                {formatPhoneNumber(phoneNumber)}
+              </ThemedText>
+            </ThemedView>
+          </ThemedView>
+          <ThemedView style={[styles.flexStart]}>
+            <ThemedText type="subtitleFooter">
+              Công ty cổ phần thực phẩm cholimex
+            </ThemedText>
+            <ThemedView
+              style={[
+                styles.contaiContent,
+                styles.rowContai,
+                styles.padTopLeft,
+              ]}
+            >
+              <Image
+                source={require("../../assets/images/iconlocation.png")}
+                style={[styles.iconFooter, styles.flexStart]}
+              />
+              <ThemedText type="titleFooter">
+                Đường số 7, KCN Vĩnh Lộc, Huyện Bình Chánh, TP.HCM, Việt Nam
+              </ThemedText>
+            </ThemedView>
+            <ThemedView
+              style={[
+                styles.contaiContent,
+                styles.rowContai,
+                styles.padTopLeft,
+              ]}
+            >
+              <Image
+                source={require("../../assets/images/iconmail.png")}
+                style={styles.iconFooter}
+              />
+              <ThemedText type="titleFooter">Email: {email}</ThemedText>
+            </ThemedView>
+            <ThemedView
+              style={[
+                styles.contaiContent,
+                styles.rowContai,
+                styles.padTopLeft,
+              ]}
+            >
+              <Image
+                source={require("../../assets/images/iconwebsite.png")}
+                style={styles.iconFooter}
+              />
+              <WebsiteLink />
+            </ThemedView>
+          </ThemedView>
+        </>
+      )}
     </ParallaxScrollView>
   );
 }

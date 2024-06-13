@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, ReactNode } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Định nghĩa kiểu dữ liệu cho userData
 interface UserData {
   id: string | null;
   userId: string | null;
@@ -10,16 +10,13 @@ interface UserData {
   phoneNumber: string | null;
 }
 
-// Định nghĩa kiểu dữ liệu cho AuthContext
 interface AuthContextType {
   userData: UserData;
-  setInfoUser: (userData: UserData) => void;
-  logout: () => void;
+  setUserData: (userData: UserData) => void;
   token: string | null;
   setToken: (token: string | null) => void;
 }
 
-// Tạo ngữ cảnh với kiểu dữ liệu xác định
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
@@ -35,25 +32,33 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     phoneNumber: null,
   });
 
-  const setInfoUser = (userData: UserData) => {
-    setUserData(userData);
+  const setInfoUser = (newUserData: UserData) => {
+    setUserData(newUserData);
   };
 
-  const logout = () => {
-    setUserData({
-      id: null,
-      userId: null,
-      fullName: null,
-      department: null,
-      email: null,
-      phoneNumber: null,
-    });
-    setToken(null); // Đặt token thành null khi logout
+  // Lưu trạng thái đăng nhập
+  const saveLoggedInState = async (token: any) => {
+    try {
+      await AsyncStorage.setItem("isLoggedIn", token ? "true" : "false");
+    } catch (error) {
+      console.error("Error saving login state:", error);
+    }
+  };
+
+  // Kiểm tra trạng thái đăng nhập
+  const checkLoggedInState = async () => {
+    try {
+      const token = await AsyncStorage.getItem("isLoggedIn");
+      return token === "true";
+    } catch (error) {
+      console.error("Error checking login state:", error);
+      return false;
+    }
   };
 
   return (
     <AuthContext.Provider
-      value={{ userData, setInfoUser, logout, token, setToken }}
+      value={{ userData, setUserData: setInfoUser, token, setToken }}
     >
       {children}
     </AuthContext.Provider>

@@ -3,7 +3,7 @@ import { TouchableOpacity, Alert } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 
 interface QRCodeGeneratorProps {
-  url: string; // Xác định kiểu dữ liệu cho url là string
+  url: string;
 }
 
 const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({ url }) => {
