@@ -6,9 +6,10 @@ import {
   Alert,
   ActivityIndicator,
   View,
+  TouchableOpacity,
+  Linking,
 } from "react-native";
 import axios from "axios";
-import { TouchableOpacity, Linking } from "react-native";
 import { useAuth } from "../../components/AuthProvider";
 import { ThemedText } from "../../components/ThemedText";
 import ParallaxScrollView from "../../components/ParallaxScrollView";
@@ -25,12 +26,13 @@ export default function TabOneScreen() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   const { userData } = useAuth();
   const userId = userData.userId;
   const { token } = useAuth();
 
-  function formatPhoneNumber(phoneNumber: string) {
+  const formatPhoneNumber = (phoneNumber: string) => {
     const cleaned = ("" + phoneNumber).replace(/\D/g, "");
 
     if (cleaned === null || cleaned === "") {
@@ -48,7 +50,7 @@ export default function TabOneScreen() {
     }
 
     return parts.join(" ");
-  }
+  };
 
   const sleep = (ms: any) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -123,10 +125,11 @@ export default function TabOneScreen() {
         <Image
           source={require("../../assets/images/bg-qrcode.png")}
           style={styles.bgQrCode}
+          onLoad={() => setImageLoaded(true)}
         />
       }
     >
-      {loading ? (
+      {!imageLoaded || loading ? (
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color="#FF3333" />
         </View>

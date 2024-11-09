@@ -40,6 +40,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const saveLoggedInState = async (token: any) => {
     try {
       await AsyncStorage.setItem("isLoggedIn", token ? "true" : "false");
+      console.log("===", await AsyncStorage.getItem("isLoggedIn"));
     } catch (error) {
       console.error("Error saving login state:", error);
     }
@@ -58,7 +59,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   return (
     <AuthContext.Provider
-      value={{ userData, setUserData: setInfoUser, token, setToken }}
+      value={{
+        userData,
+        setUserData: setInfoUser,
+        token,
+        setToken: saveLoggedInState,
+      }}
     >
       {children}
     </AuthContext.Provider>

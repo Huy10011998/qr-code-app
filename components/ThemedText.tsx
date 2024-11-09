@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   subtitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
     textTransform: "uppercase",
     color: "#fff",
@@ -71,14 +71,14 @@ const styles = StyleSheet.create({
     color: "#0a7ea4",
   },
   titleDepartment: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
     color: "#fff",
     paddingTop: 5,
     textAlign: "center",
   },
   titlePhone: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#fff",
     paddingTop: 15,
@@ -86,14 +86,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   subtitleFooter: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: "bold",
     color: "#fff",
     paddingLeft: 5,
     textTransform: "uppercase",
   },
   titleFooter: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
     color: "#fff",
     paddingLeft: 5,
