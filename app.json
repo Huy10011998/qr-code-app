@@ -8,7 +8,7 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/logo-cholimex.jpg",
+      "image": "./assets/images/logo-cholimex.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },

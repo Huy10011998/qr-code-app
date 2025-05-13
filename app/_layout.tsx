@@ -4,15 +4,15 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
 import React from "react";
-import { AuthProvider } from "../components/AuthProvider";
+import { AuthProvider, useAuth } from "../components/AuthProvider";
 import { useColorScheme } from "react-native";
+import type { Href } from "expo-router";
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -39,11 +39,24 @@ export default function RootLayout() {
 }
 
 function AppNavigator({ colorScheme }: { colorScheme: "light" | "dark" }) {
+  const { token } = useAuth();
+  const router = useRouter();
+  const [hasNavigated, setHasNavigated] = React.useState(false);
+
+  // useEffect(() => {
+  //   if (token) {
+  //     router.replace("(tabs)" as Href);
+  //   } else {
+  //     router.replace("index" as Href);
+  //   }
+  //   setHasNavigated(true);
+  // }, [token, hasNavigated]);
+
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(tabs)" />
         <Stack.Screen name="+not-found" />
       </Stack>
     </ThemeProvider>

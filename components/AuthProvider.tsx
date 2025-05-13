@@ -1,6 +1,13 @@
-import React, { createContext, useState, useContext, ReactNode } from "react";
+import React, {
+  createContext,
+  useState,
+  useContext,
+  ReactNode,
+  useEffect,
+} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+// Định nghĩa kiểu dữ liệu cho userData
 interface UserData {
   id: string | null;
   userId: string | null;
@@ -10,6 +17,7 @@ interface UserData {
   phoneNumber: string | null;
 }
 
+// Định nghĩa kiểu cho AuthContext
 interface AuthContextType {
   userData: UserData;
   setUserData: (userData: UserData) => void;
@@ -32,30 +40,55 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     phoneNumber: null,
   });
 
-  const setInfoUser = (newUserData: UserData) => {
-    setUserData(newUserData);
-  };
+  // useEffect(() => {
+  //   AsyncStorage.removeItem("token");
+  // }, [token]);
 
-  // Lưu trạng thái đăng nhập
-  const saveLoggedInState = async (token: any) => {
+  // Hàm cập nhật userData và lưu vào AsyncStorage
+  const setInfoUser = async (newUserData: UserData) => {
     try {
-      await AsyncStorage.setItem("isLoggedIn", token ? "true" : "false");
-      console.log("===", await AsyncStorage.getItem("isLoggedIn"));
+      setUserData(newUserData);
+      await AsyncStorage.setItem("userData", JSON.stringify(newUserData));
     } catch (error) {
-      console.error("Error saving login state:", error);
+      console.error("Error saving userData:", error);
     }
   };
 
-  // Kiểm tra trạng thái đăng nhập
-  const checkLoggedInState = async () => {
+  // Hàm cập nhật token: lưu AsyncStorage + cập nhật state
+  const updateToken = async (newToken: string | null) => {
     try {
-      const token = await AsyncStorage.getItem("isLoggedIn");
-      return token === "true";
+      if (newToken) {
+        await AsyncStorage.setItem("token", newToken);
+      } else {
+        await AsyncStorage.removeItem("token");
+      }
+      setToken(newToken);
     } catch (error) {
-      console.error("Error checking login state:", error);
-      return false;
+      console.error("Error saving token:", error);
     }
   };
+
+  // Tải token và userData từ AsyncStorage khi app khởi động
+  useEffect(() => {
+    const loadStoredAuth = async () => {
+      try {
+        const savedToken = await AsyncStorage.getItem("token");
+        const savedUserData = await AsyncStorage.getItem("userData");
+
+        if (savedToken) {
+          setToken(savedToken);
+        }
+
+        if (savedUserData) {
+          setUserData(JSON.parse(savedUserData));
+        }
+      } catch (error) {
+        console.error("Failed to load auth from storage:", error);
+      }
+    };
+
+    loadStoredAuth();
+  }, []);
 
   return (
     <AuthContext.Provider
@@ -63,7 +96,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         userData,
         setUserData: setInfoUser,
         token,
-        setToken: saveLoggedInState,
+        setToken: updateToken,
       }}
     >
       {children}
